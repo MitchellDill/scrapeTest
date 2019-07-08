@@ -39,8 +39,8 @@ const asyncDownload = (url, destination) => new Promise((resolve, reject) => {
 });
 
 
-const downloadImg = (propScraper, downloader) => {
-    propScraper(url).then((scrapedImg) => {
+const downloadImg = (url) => {
+    scrapeImageProps(url).then((scrapedImg) => {
         let name = scrapedImg.scrapedName._remoteObject.value;
         const src = scrapedImg.scrapedSrc._remoteObject.value;
         
@@ -48,7 +48,7 @@ const downloadImg = (propScraper, downloader) => {
         name = name.replace(reg, '-');
         const image = { name, src };
         
-        downloader(image.src, `./scrapedImages/${image.name}.png`);
+        asyncDownload(image.src, `./scrapedImages/${image.name}.png`);
     }).then(() => {
         console.log(counter);
     }).catch((err) => {
@@ -60,13 +60,10 @@ const loopImgScrape = async (scraper, linksArr) => {
     for (let i = 0; i < linksArr.length; i++) {
         const url = linksArr[i];
         counter++;
-        await scraper(scrapeImageProps, asyncDownload)
+        console.log('test');
+        const img = await scraper(url);
     }
 };
 
+
 loopImgScrape(downloadImg, links);
-
-
-
-
-//'https://www.lowes.com/pd/IRWIN-16-oz-Smooth-Face-Steel-Head-Fiberglass-Framing-Hammer/1000002588'
