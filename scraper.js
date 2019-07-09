@@ -12,7 +12,7 @@ const scrapeImageProps = async (url) => {
         const page = await browser.newPage();
         await page.goto(url);
         const el = await page.$('#main > div.grid-container > div > section.pd-holder.met-product.grid-100.grid-parent.v-spacing-jumbo > div.pd-left.grid-50.tablet-grid-50.grid-parent > div.grid-100.v-spacing-medium > div.pd-image-holder.grid-85.tablet-grid-80 > a > img');  
-    
+
         const scrapedImg = {};
         scrapedImg.scrapedName = await el.getProperty('alt');
         scrapedImg.scrapedSrc = await el.getProperty('src');
@@ -20,7 +20,7 @@ const scrapeImageProps = async (url) => {
         browser.close();
         return scrapedImg;
     } catch(err) {
-        alert(err);
+        console.log('in scrape: ', err);
     }
 };
 
@@ -52,7 +52,7 @@ const downloadImg = (url) => {
     }).then(() => {
         console.log(counter);
     }).catch((err) => {
-        throw(err);
+        console.log('in download: ', err);
     });
 };
 
@@ -60,10 +60,10 @@ const loopImgScrape = async (scraper, linksArr) => {
     for (let i = 0; i < linksArr.length; i++) {
         const url = linksArr[i];
         counter++;
-        console.log('test');
-        const img = await scraper(url);
+        const scraping = await scraper(url);
+        console.log(`${i} loop is done`);
     }
 };
 
 
-loopImgScrape(downloadImg, links);
+loopImgScrape(downloadImg, links.links);
