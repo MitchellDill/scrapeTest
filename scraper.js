@@ -3,22 +3,32 @@ const fs = require('fs');
 const https = require('https');
 const links = require('./links.js')
 
-let counter = 0000;
-
-const scrapeImageProps = async (url) => {
+const scrapeLowesImages = async (urls) => {
 
     try {
         const browser = await puppeteer.launch({headless: false});
         const page = await browser.newPage();
-        await page.goto(url);
-        const el = await page.$('#main > div.grid-container > div > section.pd-holder.met-product.grid-100.grid-parent.v-spacing-jumbo > div.pd-left.grid-50.tablet-grid-50.grid-parent > div.grid-100.v-spacing-medium > div.pd-image-holder.grid-85.tablet-grid-80 > a > img');  
+        await page.setViewport({width: 1000, height: 1000})
 
-        const scrapedImg = {};
-        scrapedImg.scrapedName = await el.getProperty('alt');
-        scrapedImg.scrapedSrc = await el.getProperty('src');
-        
+
+        for (let i = 0; i < urls.length; i++) {
+            await page.goto(urls[i]);
+            const el = await page.$(`#main > div.grid-container > div > 
+            section.pd-holder.met-product.grid-100.grid-parent.v-spacing-jumbo > 
+            div.pd-left.grid-50.tablet-grid-50.grid-parent > div.grid-100.v-spacing-medium > 
+            div.pd-image-holder.grid-85.tablet-grid-80 > a > img`);  
+            
+            const scrapedName = await el.getProperty('alt');
+            const scrapedSrc = await el.getProperty('src');
+            const scrapedImg = { scrapedName, scrapedSrc };
+            const image = formatImgProps(scrapedImg);
+
+            await asyncDownload(image.src, `./scrapedImages/${image.name}.png`);
+            console.log(`${i} loop is done`);
+        }
+
         browser.close();
-        return scrapedImg;
+
     } catch(err) {
         console.log('in scrape: ', err);
     }
@@ -39,31 +49,14 @@ const asyncDownload = (url, destination) => new Promise((resolve, reject) => {
 });
 
 
-const downloadImg = (url) => {
-    scrapeImageProps(url).then((scrapedImg) => {
-        let name = scrapedImg.scrapedName._remoteObject.value;
-        const src = scrapedImg.scrapedSrc._remoteObject.value;
-        
-        let reg = / +/g;
-        name = name.replace(reg, '-');
-        const image = { name, src };
-        
-        asyncDownload(image.src, `./scrapedImages/${image.name}.png`);
-    }).then(() => {
-        console.log(counter);
-    }).catch((err) => {
-        console.log('in download: ', err);
-    });
-};
-
-const loopImgScrape = async (scraper, linksArr) => {
-    for (let i = 0; i < linksArr.length; i++) {
-        const url = linksArr[i];
-        counter++;
-        const scraping = await scraper(url);
-        console.log(`${i} loop is done`);
-    }
-};
+const formatImgProps = (scrapedImg) => {
+    let reg = /[ :]+/g;
+    let name = scrapedImg.scrapedName._remoteObject.value;
+    name = name.replace(reg, '-');
+    const src = scrapedImg.scrapedSrc._remoteObject.value;    
+    const image = { name, src };
+    return image;
+};      
 
 
-loopImgScrape(downloadImg, links.links);
+scrapeLowesImages(links.links);
