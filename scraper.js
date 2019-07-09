@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const fs = require('fs');
 const https = require('https');
-const links = require('./links.js')
+const links = require('./imageLinks.js')
 
 const scrapeLowesImages = async (urls) => {
 
@@ -50,7 +50,7 @@ const asyncDownload = (url, destination) => new Promise((resolve, reject) => {
 
 
 const formatImgProps = (scrapedImg) => {
-    let reg = /[ :]+/g;
+    let reg = /[ :/.?]+/g;
     let name = scrapedImg.scrapedName._remoteObject.value;
     name = name.replace(reg, '-');
     const src = scrapedImg.scrapedSrc._remoteObject.value;    
@@ -59,4 +59,4 @@ const formatImgProps = (scrapedImg) => {
 };      
 
 
-scrapeLowesImages(links.links);
+scrapeLowesImages(links.linksArray);
