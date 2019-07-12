@@ -30,22 +30,23 @@ const scrapeLowesImages = async (urls) => {
             const scrapedCategory = await (await el2.getProperty('textContent')).jsonValue();
             image.category = scrapedCategory;
 
-            const el3 = await page.$(`#mainContent > ul > li:nth-child(3) > a > span`);
+            const el3 = await page.$(`#mainContent > ul > li:last-child > a > span`);
             const scrapedSubCategory = await (await el3.getProperty('textContent')).jsonValue();
             image.subCategory = scrapedSubCategory;
 
             jsonScrapings[image.id] = image;
-            
+
             console.log(scrapedCategory);
             console.log(scrapedSubCategory);
             console.log(`${i} loop is done`);
         }
         
         await asyncWriteFile(JSON.stringify(jsonScrapings), `./scrapedData/scrapings.json`);
-        browser.close();
 
     } catch(err) {
         console.log('in scrape: ', err);
+    } finally {
+        browser.close();
     }
 };
 

@@ -27,10 +27,10 @@ const scrapeLowesImages = async (urls) => {
             console.log(`${i} loop is done`);
         }
 
-        browser.close();
-
     } catch(err) {
         console.log('in scrape: ', err);
+    } finally {
+        browser.close();
     }
 };
 
