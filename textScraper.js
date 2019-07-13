@@ -5,8 +5,10 @@ const links = require('./imageLinks.js')
 
 const scrapeLowesImages = async (urls) => {
 
+    let browser;
+
     try {
-        const browser = await puppeteer.launch({headless: false});
+        browser = await puppeteer.launch({headless: false});
         const page = await browser.newPage();
         await page.setViewport({width: 1000, height: 1000})
         const jsonScrapings = {};
@@ -20,9 +22,9 @@ const scrapeLowesImages = async (urls) => {
             div.pd-image-holder.grid-85.tablet-grid-80 > a > img`);
             
             
-            const scrapedName = await el.getProperty('alt');
+            const scrapedAlt = await el.getProperty('alt');
             const scrapedSrc = await el.getProperty('src');
-            const scrapedImgProps = { scrapedName, scrapedSrc };
+            const scrapedImgProps = { scrapedAlt, scrapedSrc };
             const image = formatImgProps(scrapedImgProps);
             image.id = i + 1;
 
@@ -34,10 +36,16 @@ const scrapeLowesImages = async (urls) => {
             const scrapedSubCategory = await (await el3.getProperty('textContent')).jsonValue();
             image.subCategory = scrapedSubCategory;
 
+            const el4 = await page.$(`#main > div.grid-container > div > 
+            section.pd-holder.met-product.grid-100.grid-parent.v-spacing-jumbo > 
+            div.pd-left.grid-50.tablet-grid-50.grid-parent > 
+            div.pd-title.met-product-title.grid-100.v-spacing-mini > h1`);
+            const scrapedName = await (await el4.getProperty('textContent')).jsonValue();
+            image.name = scrapedName.trim();
+
             jsonScrapings[image.id] = image;
 
-            console.log(scrapedCategory);
-            console.log(scrapedSubCategory);
+            console.log(scrapedName);
             console.log(`${i} loop is done`);
         }
         
@@ -63,12 +71,15 @@ const asyncWriteFile = (file, destination) => new Promise((resolve, reject) => {
 
 const formatImgProps = (scrapedImg) => {
     let reg = /[ :/.?]+/g;
-    let name = scrapedImg.scrapedName._remoteObject.value;
-    name = name.replace(reg, '-');
+    let alt = scrapedImg.scrapedAlt._remoteObject.value;
+    alt = alt.replace(reg, '-');
     const src = scrapedImg.scrapedSrc._remoteObject.value;    
-    const image = { name, src };
+    const image = { alt, src };
     return image;
 };      
 
 
-scrapeLowesImages(links.linksArray);
+scrapeLowesImages(links.linksArray)
+    .catch((err) => {
+        console.log(err);
+    });
