@@ -5,8 +5,10 @@ const links = require('./imageLinks.js')
 
 const scrapeLowesImages = async (urls) => {
 
+    let browser;
+    
     try {
-        const browser = await puppeteer.launch({headless: false});
+        browser = await puppeteer.launch({headless: false});
         const page = await browser.newPage();
         await page.setViewport({width: 1000, height: 1000})
 
@@ -18,12 +20,12 @@ const scrapeLowesImages = async (urls) => {
             div.pd-left.grid-50.tablet-grid-50.grid-parent > div.grid-100.v-spacing-medium > 
             div.pd-image-holder.grid-85.tablet-grid-80 > a > img`);  
             
-            const scrapedName = await el.getProperty('alt');
             const scrapedSrc = await el.getProperty('src');
-            const scrapedImg = { scrapedName, scrapedSrc };
-            const image = formatImgProps(scrapedImg);
 
-            await asyncDownload(image.src, `./scrapedImages/${image.name}.png`);
+            const name = i + 1;
+            const src = scrapedSrc._remoteObject.value;
+
+            await asyncDownload(src, `./scrapedImages/${name}.png`);
             console.log(`${i} loop is done`);
         }
 
@@ -47,16 +49,5 @@ const asyncDownload = (url, destination) => new Promise((resolve, reject) => {
         reject(error.message);
     })
 });
-
-
-const formatImgProps = (scrapedImg) => {
-    let reg = /[ :/.?]+/g;
-    let name = scrapedImg.scrapedName._remoteObject.value;
-    name = name.replace(reg, '-');
-    const src = scrapedImg.scrapedSrc._remoteObject.value;    
-    const image = { name, src };
-    return image;
-};      
-
 
 scrapeLowesImages(links.linksArray);
